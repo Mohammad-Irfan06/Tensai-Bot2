@@ -6,3 +6,6 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 MONGO_DB_URI = os.getenv("MONGO_DB_URI")
 FFMPEG_PATH = os.getenv("FFMPEG_PATH", "/usr/bin/ffmpeg")  # default path for ffmpeg
+
+# Temporary Download Path
+DOWNLOAD_DIR = os.getenv("DOWNLOAD_DIR", "./downloads")
