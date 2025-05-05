@@ -1,36 +1,21 @@
-import motor.motor_asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
 import os
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+client = None
+db = None
 
-# MongoDB setup
-MONGO_URI = os.getenv("MONGO_URI")
-client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
-db = client.rename_bot_db
+def db_init():
+    global client, db
+    client = AsyncIOMotorClient(os.getenv("MONGO_DB_URI"))
+    db = client.rename_bot
 
-# Collection for storing user thumbnails
-thumbnails_collection = db.thumbnails
+async def save_file_path(user_id, file_path):
+    await db.files.update_one(
+        {"user_id": user_id},
+        {"$set": {"file_path": file_path}},
+        upsert=True
+    )
 
-
-async def save_thumbnail(user_id: int, thumbnail_path: str):
-    """Save the thumbnail path to the database."""
-    existing_thumbnail = await thumbnails_collection.find_one({"user_id": user_id})
-    
-    if existing_thumbnail:
-        # Update if thumbnail already exists for user
-        await thumbnails_collection.update_one(
-            {"user_id": user_id}, {"$set": {"thumbnail_path": thumbnail_path}}
-        )
-    else:
-        # Insert new thumbnail if not found
-        await thumbnails_collection.insert_one(
-            {"user_id": user_id, "thumbnail_path": thumbnail_path}
-        )
-
-
-async def get_thumbnail(user_id: int):
-    """Retrieve the thumbnail path from the database."""
-    thumbnail = await thumbnails_collection.find_one({"user_id": user_id})
-    return thumbnail["thumbnail_path"] if thumbnail else None
+async def get_file_path(user_id):
+    file = await db.files.find_one({"user_id": user_id})
+    return file["file_path"] if file else None
