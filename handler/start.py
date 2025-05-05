@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from config import FORCE_SUB_CHANNELS
 from pyrogram.errors import UserNotParticipant
 from helper.database import add_user
