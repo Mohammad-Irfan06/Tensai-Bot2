@@ -1,11 +1,23 @@
-import logging
+import os
+import asyncio
 from pyrogram import Client
-from config import API_ID, API_HASH, BOT_TOKEN
+from helper.database import db_init
+from handler.start import start_handler
+from handler.callback import callback_handler
+from plugins.rename import rename_handler
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("RenameBot")
+# Initialize MongoDB
+db_init()
 
-bot = Client("rename_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+app = Client("rename_bot", api_id=os.getenv("API_ID"), api_hash=os.getenv("API_HASH"), bot_token=os.getenv("BOT_TOKEN"))
 
-# Rest of your bot code...
-bot.run()
+# Add Handlers
+app.add_handler(start_handler)
+app.add_handler(callback_handler)
+app.add_handler(rename_handler)
+
+async def main():
+    await app.start()
+
+if __name__ == "__main__":
+    asyncio.run(main())
