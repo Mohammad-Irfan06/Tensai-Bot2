@@ -1,10 +1,10 @@
 import os
 
-API_ID = int(os.getenv("API_ID"))
-API_HASH = os.getenv("API_HASH")
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+API_ID = int(os.getenv("21786970"))
+API_HASH = os.getenv("aa1eaa84080fdf706c5cb37a27d35e81)
+BOT_TOKEN = os.getenv("7849794082:AAEhUjqhZS-YMrWKgWghLbZnivv3MnRR_Lo")
 
-MONGO_DB_URI = os.getenv("MONGO_DB_URI")
+MONGO_DB_URl = os.getenv("mongodb+srv://mohammadirfan5227:uwkiGejZGyRLV3nP@cluster0.ub1brgf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 FFMPEG_PATH = os.getenv("FFMPEG_PATH", "/usr/bin/ffmpeg")
 
 # Temporary Download Path
