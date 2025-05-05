@@ -2,8 +2,7 @@ import os
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-thumb_handler = Client.on_message(filters.photo)
-
+@Client.on_message(filters.photo)
 async def thumb_handler(client: Client, message: Message):
     user_id = str(message.from_user.id)
     
@@ -15,4 +14,3 @@ async def thumb_handler(client: Client, message: Message):
     
     # Confirm that the thumbnail is saved
     await message.reply_text("Thumbnail saved successfully!")
-
