@@ -1,32 +1,27 @@
-import os
-import ffmpeg
-from pyrogram import Client, filters
-from pyrogram.types import Message
-from helper.database import save_file_path
-from helper.utils import sanitize_filename
-from helper.queue import add_to_queue
-
-rename_handler = Client.on_message(filters.document)
+from plugins.progress import send_progress
 
 async def rename_handler(client: Client, message: Message):
     user_id = str(message.from_user.id)
     
-    # Download the file
+    # Download the file with progress updates
+    temp_file_path = os.path.join("/tmp", f"{user_id}_raw.mp4")
+    
+    # Initialize progress message
+    progress_msg = await message.reply_text("Downloading file...")
+
+    # Download the file with progress
+    await message.download(file_name=temp_file_path, progress=send_progress, progress_args=(client, progress_msg))
+    
+    # After download, rename and process video
     file_name = sanitize_filename(message.document.file_name)
-    temp_file_path = os.path.join("/tmp", f"{user_id}_{file_name}")
-    
-    await message.download(file_name=temp_file_path)
-    
-    # Get the thumbnail if available
-    thumb_path = os.path.join("/tmp", f"{user_id}_thumb.jpg")
-    if message.photo:
-        await message.download(file_name=thumb_path)
-    
-    # Process the video: Rename and embed thumbnail
     new_file_path = os.path.join("/tmp", f"renamed_{file_name}")
+    
+    thumb_path = os.path.join("downloads", f"{user_id}.jpg")
+    
+    # Handle the thumbnail if available
     try:
         if os.path.exists(thumb_path):
-            # Embedding thumbnail using FFmpeg
+            # Embed the thumbnail using FFmpeg
             (
                 ffmpeg
                 .input(temp_file_path)
@@ -37,11 +32,12 @@ async def rename_handler(client: Client, message: Message):
         else:
             os.rename(temp_file_path, new_file_path)
         
-        # Save file path to MongoDB
-        await save_file_path(user_id, new_file_path)
-        
-        # Send the renamed video with thumbnail (if attached)
-        await message.reply_video(video=new_file_path, caption="Here is your renamed video!")
-        
+        # Send the renamed video with progress updates
+        await message.reply_video(video=new_file_path, caption="Here is your renamed video with thumbnail!")
+
+        # Update the progress message once done
+        await progress_msg.edit_text("Renaming completed!")
+    
     except Exception as e:
         await message.reply_text(f"An error occurred: {e}")
+        await progress_msg.edit_text(f"Error: {e}")
