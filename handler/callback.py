@@ -1,3 +1,7 @@
+# handler/callback.py
+from pyrogram import Client, InlineKeyboardMarkup, InlineKeyboardButton
+from handler.start import start_handler  # Assuming you have a start_handler in the start.py file
+
 @Client.on_callback_query()
 async def handle_callbacks(bot, query):
     if query.data == "how_to_use":
@@ -21,4 +25,4 @@ async def handle_callbacks(bot, query):
         )
 
     elif query.data == "back_to_home":
-        await start_handler(bot, query.message)
+        await start_handler(bot, query.message)  # Make sure start_handler is correctly imported from handler/start.py
