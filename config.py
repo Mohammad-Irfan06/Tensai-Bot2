@@ -1,7 +1,8 @@
 import os
 
-API_ID = int(os.environ.get("API_ID", ""))  # Replace with your API_ID
-API_HASH = os.environ.get("API_HASH", "")
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
+API_ID = int(os.getenv("API_ID"))
+API_HASH = os.getenv("API_HASH")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-MONGO_URL = os.environ.get("MONGO_URL", "")  # MongoDB URI
+MONGO_DB_URI = os.getenv("MONGO_DB_URI")
+FFMPEG_PATH = os.getenv("FFMPEG_PATH", "/usr/bin/ffmpeg")  # default path for ffmpeg
