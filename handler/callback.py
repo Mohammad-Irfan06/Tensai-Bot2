@@ -1,5 +1,6 @@
 # handler/callback.py
-from pyrogram import Client, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram import Client
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton  # Corrected import
 from handler.start import start_handler  # Assuming you have a start_handler in the start.py file
 
 @Client.on_callback_query()
