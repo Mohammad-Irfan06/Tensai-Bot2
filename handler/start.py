@@ -1,6 +1,6 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from config import WELCOME_IMAGE
+from config import WELCOME_IMAGE  # Import the WELCOME_IMAGE from config.py
 
 # The /start command handler
 @Client.on_message(filters.command("start"))
