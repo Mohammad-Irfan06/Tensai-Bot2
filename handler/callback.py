@@ -1,7 +1,6 @@
-# handler/callback.py
 from pyrogram import Client
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from handler.start import start_handler  # Correct import
+from handler.start import start  # Correct import
 
 @Client.on_callback_query()
 async def handle_callbacks(bot, query):
@@ -26,4 +25,4 @@ async def handle_callbacks(bot, query):
         )
 
     elif query.data == "back_to_home":
-        await start_handler(bot, query.message)  # This should work now
+        await start(bot, query.message)  # This should work now
