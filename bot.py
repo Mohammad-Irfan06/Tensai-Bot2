@@ -14,12 +14,15 @@ db_init()
 app = Client("rename_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 # Add Handlers
+app.add_handler(start)
 app.add_handler(callback_handler)
 app.add_handler(rename_handler)
 app.add_handler(thumb_handler)
 
 async def main():
     await app.start()
+    print("🤖 Tensai Rename Bot Started...")
+    await asyncio.Event().wait()  # Keeps bot running
 
 if __name__ == "__main__":
     asyncio.run(main())
