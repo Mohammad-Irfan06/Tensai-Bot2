@@ -13,3 +13,4 @@ DOWNLOAD_DIR = "./downloads"
 
 # Welcome Image Path
 WELCOME_IMAGE = "./resources/start_pic.jpg"
+
