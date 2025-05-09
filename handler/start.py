@@ -3,7 +3,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from config import WELCOME_IMAGE
 
-# This handler will respond to the /start command
+# This function will be triggered when the /start command is called
 @Client.on_message(filters.command("start"))
 async def start(client: Client, message: Message):
     # Send the welcome image with a caption and inline buttons
