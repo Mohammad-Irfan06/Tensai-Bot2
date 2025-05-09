@@ -1,6 +1,5 @@
 from pyrogram import Client
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from handler.start import start_handler  # Correct import
 
 @Client.on_callback_query()
 async def handle_callbacks(bot, query):
@@ -25,4 +24,11 @@ async def handle_callbacks(bot, query):
         )
 
     elif query.data == "back_to_home":
-        await start_handler(bot, query.message)  # This should work now
+        # Back to home logic, if needed
+        await query.message.reply_text(
+            "Welcome to Tensai Bot! Send me a file to rename.",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("Help", callback_data="how_to_use")],
+                [InlineKeyboardButton("About", callback_data="about")]
+            ])
+        )
