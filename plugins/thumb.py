@@ -25,7 +25,7 @@ def attach_thumbnail(video_file, thumbnail_file):
 
         # Use ffmpeg-python to embed the thumbnail into the video
         ffmpeg.input(video_file)
-        ffmpeg.input(temp_thumb, loop=1).output(output_path, map="0:v:0", map="1:a:0", c="copy", dis="1").run()
+        ffmpeg.input(temp_thumb, loop=1).output(output_path, map="0", map="1", c="copy", dis="1").run()
 
         # Cleanup the temporary thumbnail file
         os.remove(temp_thumb)
