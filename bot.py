@@ -10,7 +10,7 @@ from plugins.thumb import attach_thumbnail
 from utils.sanitize import sanitize_filename
 from utils.progress import display_progress
 
-app = Client("TensaiBot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN)
+app = Client("TensaiBot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN, workdir="./session/")
 
 # Dictionary to store user states (tracking rename process)
 user_states = {}
