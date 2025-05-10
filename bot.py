@@ -122,3 +122,19 @@ async def process_rename(client, callback_query):
     except Exception as e:
         await callback_query.message.reply(f"❌ Error processing file: {e}")
 
+async def keep_alive():
+    """Periodically pings Telegram to prevent disconnection."""
+    while True:
+        await asyncio.sleep(30)
+        print("🔄 Keeping bot alive...")
+
+if __name__ == "__main__":
+    print("🚀 Tensai Rename Bot is starting...")
+    
+    try:
+        start_bot()
+        threading.Thread(target=lambda: asyncio.run(keep_alive()), daemon=True).start()
+        app.run()
+        print("✅ Tensai Bot Started Successfully!")
+    except Exception as e:
+        print(f"❌ Bot startup failed: {e}")
