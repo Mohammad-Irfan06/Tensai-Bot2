@@ -21,8 +21,8 @@ app.add_handler(thumb_handler)
 
 async def main():
     await app.start()
-    print("🤖 Tensai Rename Bot Started...")
-    await asyncio.Event().wait()  # Keeps bot running
+    print("🤖 Tensai Rename Bot Started.")
+    await asyncio.Event().wait()  # Keeps the bot running
 
 if __name__ == "__main__":
     asyncio.run(main())
