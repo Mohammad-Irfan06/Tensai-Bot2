@@ -1,5 +1,6 @@
 import os
 import asyncio
+import threading
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import config
@@ -23,6 +24,25 @@ async def start(client, message):
         await message.reply_photo(photo=start_image_path, caption="🤖 Hello! I am Tensai Rename Bot.\nSend me a file to rename!")
     else:
         await message.reply("🤖 Hello! I am Tensai Rename Bot.\nSend me a file to rename!\n⚠️ Warning: Start image not found.")
+
+@app.on_message(filters.photo)
+async def save_thumbnail(client, message):
+    """Stores thumbnail image and confirms receipt."""
+    print("DEBUG: Thumbnail received.")  
+
+    try:
+        file_path = await message.download()
+        if not file_path:
+            await message.reply("❌ Error: Failed to save thumbnail!")
+            print("DEBUG: Thumbnail download failed!")  
+            return
+        
+        user_states[message.chat.id] = {"thumbnail": file_path}
+        await message.reply("📸 Thumbnail saved successfully! Now send me the video file.")
+        print(f"DEBUG: Thumbnail saved at {file_path}")  
+
+    except Exception as e:
+        print(f"❌ Thumbnail processing error: {e}")  
 
 @app.on_message(filters.video | filters.document)
 async def receive_file(client, message):
@@ -110,6 +130,15 @@ async def process_rename(client, callback_query):
 
     except Exception as e:
         await callback_query.message.reply(f"❌ Error processing file: {e}")
+
+async def keep_alive():
+    """Periodically pings Telegram to prevent disconnection."""
+    while True:
+        await asyncio.sleep(30)  # Sends ping every 30 sec
+        print("🔄 Keeping bot alive...")
+
+# Run the keep_alive function in a separate thread to prevent blocking bot execution
+threading.Thread(target=lambda: asyncio.run(keep_alive()), daemon=True).start()
 
 if __name__ == "__main__":
     print("🚀 Tensai Rename Bot is starting...")
