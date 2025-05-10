@@ -134,7 +134,20 @@ if __name__ == "__main__":
     try:
         start_bot()
         threading.Thread(target=lambda: asyncio.run(keep_alive()), daemon=True).start()
+        while True:
+    try:
+        print("🚀 Tensai Bot is connecting...")
         app.run()
+    except KeyboardInterrupt:
+        print("❌ Bot stopped manually.")
+        break
+    except Exception as e:
+        print(f"⚠️ Unexpected Error: {e}. Reconnecting in 5 seconds...")
+        asyncio.sleep(5)
+
+        print(f"⚠️ Unexpected Error: {e}. Reconnecting in 5 seconds...")
+        asyncio.sleep(5)
+
         print("✅ Tensai Bot Started Successfully!")
     except Exception as e:
         print(f"❌ Bot startup failed: {e}")
