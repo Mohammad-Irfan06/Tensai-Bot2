@@ -50,7 +50,7 @@ async def receive_file(client, message):
     file_path = await message.download()
     user_states[message.chat.id] = {"file": file_path}
 
-    keyboard = InlineKeyboardMarkup([
+    keyboard = InlineKeyboardMarkup([ 
         [InlineKeyboardButton("🚀 Start Rename", callback_data="start_rename")]
     ])
 
@@ -115,17 +115,18 @@ async def process_rename(client, callback_query):
             return
 
         if output_type == "video":
+            # Embed the thumbnail into the video
             final_video = await attach_thumbnail(new_file_path, thumbnail) if thumbnail else new_file_path
             if not final_video:
                 final_video = new_file_path
                 await callback_query.message.reply("⚠️ Warning: Thumbnail embedding failed. Sending original file instead.")
 
+            # Send the video without the `thumb` argument as the thumbnail is already embedded
             await client.send_video(
                 chat_id=chat_id,
                 video=final_video,
                 caption="✅ Renaming Complete! Here is your renamed video.",
-                supports_streaming=True,
-                thumb=thumbnail  
+                supports_streaming=True
             )
 
         else:
