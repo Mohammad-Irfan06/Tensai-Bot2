@@ -1,12 +1,16 @@
-def display_progress(percent, current, total, speed, time_remaining):
-    """Displays progress visually."""
+import asyncio
+
+async def display_progress(percent, current, total, speed, time_remaining, message):
+    """Displays progress dynamically in Telegram bot messages."""
     progress_bar = "⭐" * (percent // 10) + "☆" * (10 - percent // 10)
-    print(f"""
+    progress_text = f"""
 🤖 Tensai Processing: [{progress_bar}] {percent}%
-╭━━━━❰ Tensai Hacking... ❱━➣
+╭━━━━❰ Processing Video ❱━➣
 ┣⪼ 🗂️ : {current}/{total} | {percent}%
-┣⪼ ⏳️ : {percent}%
-┣⪼ 🚀 : {speed}/s
-┣⪼ ⏱️ : {time_remaining}
+┣⪼ ⏳️ Estimated Time Remaining: {time_remaining}
+┣⪼ 🚀 Speed: {speed}/s
 ╰━━━━━━━━━━━━━━━➣
-""")
+"""
+
+    await message.edit(progress_text)  # Send updates directly to Telegram
+    await asyncio.sleep(1)  # Ensures non-blocking execution
