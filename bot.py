@@ -18,8 +18,8 @@ async def save_thumbnail(client, message):
 
 @app.on_message(filters.video)  # Handles video files
 async def receive_video(client, message):
-    video_path = await message.video.download()
-    await message.reply("🎥 Video received! What should I rename it to?")
+    video_path = await message.download()  # Correct method to download the file
+    await message.reply(f"🎥 Video received! Saved as {video_path}. What should I rename it to?")
 
 # Start Bot Function
 def main():
