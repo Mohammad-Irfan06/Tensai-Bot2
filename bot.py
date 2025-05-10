@@ -1,6 +1,6 @@
 import os
 import asyncio
-from pyrogram import Client
+from pyrogram import Client, idle
 from helper.database import db_init
 from handler.start import start
 from handler.callback import callback_handler
@@ -21,8 +21,9 @@ app.add_handler(thumb_handler)
 
 async def main():
     await app.start()
-    print("🤖 Tensai Rename Bot Started.")
-    await asyncio.Event().wait()  # Keeps the bot running
+    print("Bot started successfully.")
+    await idle()  # This keeps the bot running
+    await app.stop()
 
 if __name__ == "__main__":
     asyncio.run(main())
