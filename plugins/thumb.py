@@ -13,6 +13,7 @@ def attach_thumbnail(video_file, thumbnail_file):
         return None
 
     try:
+        # Convert thumbnail to correct format
         img = Image.open(thumbnail_file)
         img.thumbnail((400, 400), Image.ANTIALIAS)  
         temp_thumb = "temp_thumbnail.jpg"
@@ -20,19 +21,22 @@ def attach_thumbnail(video_file, thumbnail_file):
         
         output_video = f"embedded_{os.path.basename(video_file)}"
         
-        process = (
-            ffmpeg.input(video_file)
-            .input(temp_thumb, loop=1)
-            .output(output_video, vcodec="libx264", movflags="faststart", pix_fmt="yuv420p")
-            .run(capture_stdout=True, capture_stderr=True)
-        )
+        # Run FFmpeg command safely with correct syntax
+        try:
+            process = (
+                ffmpeg.input(video_file)
+                .input(temp_thumb, loop=1)
+                .output(output_video, vcodec="libx264", movflags="faststart", pix_fmt="yuv420p")
+                .run(capture_stdout=True, capture_stderr=True)
+            )
 
-        print(f"✅ Thumbnail successfully embedded in: {output_video}")
-        return output_video  
-    
-    except ffmpeg.Error as e:
-        print(f"❌ FFmpeg Error: {e}")
-        return None
+            print(f"✅ Thumbnail successfully embedded in: {output_video}")
+            return output_video  
+
+        except ffmpeg.Error as e:
+            print(f"❌ FFmpeg Error: {e.stderr.decode()}")
+            return None
+        
     except Exception as e:
         print(f"❌ Unexpected Error: {e}")
         return None
