@@ -28,21 +28,17 @@ async def start(client, message):
 @app.on_message(filters.photo)
 async def save_thumbnail(client, message):
     """Stores thumbnail image and confirms receipt."""
-    print("DEBUG: Thumbnail received.")  
-
     try:
         file_path = await message.download()
         if not file_path:
             await message.reply("❌ Error: Failed to save thumbnail!")
-            print("DEBUG: Thumbnail download failed!")  
             return
         
-        user_states[message.chat.id] = {"thumbnail": file_path}
+        user_states[message.chat.id]["thumbnail"] = file_path
         await message.reply("📸 Thumbnail saved successfully! Now send me the video file.")
-        print(f"DEBUG: Thumbnail saved at {file_path}")  
 
     except Exception as e:
-        print(f"❌ Thumbnail processing error: {e}")  
+        await message.reply(f"❌ Thumbnail processing error: {e}")
 
 @app.on_message(filters.video | filters.document)
 async def receive_file(client, message):
@@ -102,11 +98,6 @@ async def process_rename(client, callback_query):
     await callback_query.message.reply("⚙️ Processing... Please wait.")
 
     try:
-        # Show Progress Bar
-        for percent in range(0, 101, 10):
-            await asyncio.sleep(1)
-            await display_progress(percent, current=percent, total=100, speed="500KB", time_remaining="5s", message=callback_query.message)
-
         # Rename the file
         new_file_path = await rename_file(file_path, new_name)
 
@@ -130,24 +121,4 @@ async def process_rename(client, callback_query):
 
     except Exception as e:
         await callback_query.message.reply(f"❌ Error processing file: {e}")
-
-async def keep_alive(client):
-    """Periodically pings Telegram to prevent disconnection."""
-    while True:
-        await asyncio.sleep(30)  # Sends ping every 30 sec
-        await client.send_message("me", "🔄 Keeping bot alive...")
-        print("🔄 Keeping bot alive...")
-
-# Run the keep_alive function in a separate thread to prevent blocking bot execution
-threading.Thread(target=lambda: asyncio.run(keep_alive()), daemon=True).start()
-
-if __name__ == "__main__":
-    print("🚀 Tensai Rename Bot is starting...")
-    start_bot()
-    
-    # Start keep_alive function with correct client argument
-    threading.Thread(target=lambda: asyncio.run(keep_alive(app)), daemon=True).start()
-    
-    app.run()
-
 
