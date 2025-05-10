@@ -1,17 +1,6 @@
-import os
-from pyrogram import Client, filters
-from pyrogram.types import Message
-from config import DOWNLOAD_DIR
+from PIL import Image
 
-@Client.on_message(filters.photo)
-async def thumb_handler(client: Client, message: Message):
-    user_id = str(message.from_user.id)
-
-    # Save the thumbnail sent by the user
-    thumb_path = os.path.join(DOWNLOAD_DIR, f"{user_id}.jpg")
-
-    # Download the thumbnail image
-    await message.download(file_name=thumb_path)
-
-    # Confirm that the thumbnail is saved
-    await message.reply_text("Thumbnail saved successfully!")
+def attach_thumbnail(video_file, thumbnail_file):
+    img = Image.open(thumbnail_file)
+    img.thumbnail((128, 128))
+    img.save(f"{video_file}_thumb.jpg")
