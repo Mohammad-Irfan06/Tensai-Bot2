@@ -12,7 +12,7 @@ from utils.sanitize import sanitize_filename
 from utils.progress import display_progress
 
 # Persistent Pyrogram session to prevent disconnections
-app = Client("TensaiBot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN, workdir="./session/")
+app = Client("TensaiBot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN, workdir="/app/session/")
 
 # Dictionary to store user states (tracking rename process)
 user_states = {}
