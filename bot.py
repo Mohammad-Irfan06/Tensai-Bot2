@@ -28,21 +28,21 @@ async def start(client, message):
 @app.on_message(filters.photo)
 async def save_thumbnail(client, message):
     """Stores thumbnail image and confirms receipt."""
-    print("DEBUG: Thumbnail received.")  
+    print("DEBUG: Thumbnail received.")
 
     try:
         file_path = await message.download()
         if not file_path:
             await message.reply("❌ Error: Failed to save thumbnail!")
-            print("DEBUG: Thumbnail download failed!")  
+            print("DEBUG: Thumbnail download failed!")
             return
-        
+
         user_states[message.chat.id] = {"thumbnail": file_path}
         await message.reply("📸 Thumbnail saved successfully! Now send me the video file.")
-        print(f"DEBUG: Thumbnail saved at {file_path}")  
+        print(f"DEBUG: Thumbnail saved at {file_path}")
 
     except Exception as e:
-        print(f"❌ Thumbnail processing error: {e}")  
+        print(f"❌ Thumbnail processing error: {e}")
 
 @app.on_message(filters.video | filters.document)
 async def receive_file(client, message):
@@ -53,7 +53,7 @@ async def receive_file(client, message):
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("🚀 Start Rename", callback_data="start_rename")]
     ])
-    
+
     await message.reply("📂 File received! Click below to start renaming:", reply_markup=keyboard)
 
 @app.on_callback_query(filters.regex("start_rename"))
@@ -79,7 +79,7 @@ async def rename_command(client, message):
             [InlineKeyboardButton("📄 Document", callback_data="output_document"),
              InlineKeyboardButton("🎥 Video", callback_data="output_video")]
         ])
-        
+
         await message.reply("🔰 Select Output Type:", reply_markup=keyboard)
 
 @app.on_callback_query(filters.regex("output_document|output_video"))
@@ -102,7 +102,7 @@ async def process_rename(client, callback_query):
     await callback_query.message.reply("⚙️ Processing... Please wait.")
 
     try:
-        # Show Progress Bar
+        # Simulate Progress Bar
         for percent in range(0, 101, 10):
             await asyncio.sleep(1)
             await display_progress(percent, current=percent, total=100, speed="500KB", time_remaining="5s", message=callback_query.message)
@@ -114,19 +114,27 @@ async def process_rename(client, callback_query):
             await callback_query.message.reply("❌ Rename process failed! Please try again.")
             return
 
-        if output_type == "video" and thumbnail:
-            embedded_video = await attach_thumbnail(new_file_path, thumbnail)
-            
-            if not embedded_video:
-                await callback_query.message.reply("⚠️ Warning: Thumbnail embedding failed. Sending renamed file instead.")
-                embedded_video = new_file_path
+        if output_type == "video":
+            final_video = await attach_thumbnail(new_file_path, thumbnail) if thumbnail else new_file_path
+            if not final_video:
+                final_video = new_file_path
+                await callback_query.message.reply("⚠️ Warning: Thumbnail embedding failed. Sending original file instead.")
 
-            await callback_query.message.reply_video(video=embedded_video, caption="✅ Renaming Complete! Here is your renamed file.")
-        
+            await client.send_video(
+                chat_id=chat_id,
+                video=final_video,
+                caption="✅ Renaming Complete! Here is your renamed video.",
+                supports_streaming=True
+            )
+
         else:
-            await callback_query.message.reply_document(document=new_file_path, caption="✅ Renaming Complete! Here is your renamed file.")
+            await client.send_document(
+                chat_id=chat_id,
+                document=new_file_path,
+                caption="✅ Renaming Complete! Here is your renamed document."
+            )
 
-        del user_states[chat_id]  # Cleanup user state after completion
+        del user_states[chat_id]  # Cleanup user state
 
     except Exception as e:
         await callback_query.message.reply(f"❌ Error processing file: {e}")
@@ -134,10 +142,10 @@ async def process_rename(client, callback_query):
 async def keep_alive():
     """Periodically pings Telegram to prevent disconnection."""
     while True:
-        await asyncio.sleep(30)  # Sends ping every 30 sec
+        await asyncio.sleep(30)
         print("🔄 Keeping bot alive...")
 
-# Run the keep_alive function in a separate thread to prevent blocking bot execution
+# Run keep_alive in a separate thread
 threading.Thread(target=lambda: asyncio.run(keep_alive()), daemon=True).start()
 
 if __name__ == "__main__":
