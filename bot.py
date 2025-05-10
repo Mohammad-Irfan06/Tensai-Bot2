@@ -1,8 +1,9 @@
-import asyncio 
+import asyncio
 from pyrogram import Client, filters
-from handler.start import start_bot
 import config
+from handler.start import start_bot
 
+# Initialize Bot Client
 app = Client("TensaiBot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN)
 
 @app.on_message(filters.command("start"))
@@ -19,13 +20,11 @@ async def receive_video(client, message):
     video_path = await message.video.download()
     await message.reply("🎥 Video received! What should I rename it to?")
 
-from pyrogram import idle
-
-async def main():
+# Start Bot Function
+def main():
     start_bot()
     print("Bot is running and listening for events...")
-    await idle()  # Keeps the bot running
-    app.run()
+    app.run()  # Pyrogram handles its own event loop, no need for asyncio.run()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
