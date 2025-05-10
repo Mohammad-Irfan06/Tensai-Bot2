@@ -13,16 +13,13 @@ def attach_thumbnail(video_file, thumbnail_file):
         return None
 
     try:
-        # Convert thumbnail to correct format
         img = Image.open(thumbnail_file)
         img.thumbnail((400, 400), Image.ANTIALIAS)  
         temp_thumb = "temp_thumbnail.jpg"
         img.save(temp_thumb, "JPEG", quality=85) 
         
-        # Output video file name
         output_video = f"embedded_{os.path.basename(video_file)}"
         
-        # Run FFmpeg command safely
         process = (
             ffmpeg.input(video_file)
             .input(temp_thumb, loop=1)
