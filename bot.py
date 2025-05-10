@@ -1,7 +1,6 @@
 import os
 import asyncio
 import threading
-import logging
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import config
@@ -11,64 +10,87 @@ from plugins.thumb import attach_thumbnail
 from utils.sanitize import sanitize_filename
 from utils.progress import display_progress
 
-# Enable logging for debugging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+app = Client("TensaiBot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN)
 
-# Initialize bot with session persistence
-app = Client("TensaiBot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN, workdir="./session/")
-
+# Dictionary to store user states (tracking rename process)
 user_states = {}
 
 @app.on_message(filters.command("start"))
 async def start(client, message):
-    logging.info("🚀 Bot received /start command.")
-    await message.reply("🤖 Hello! I am Tensai Rename Bot. Send me a file to rename!")
+    """Sends welcome image along with a message when the bot starts."""
+    start_image_path = "resources/start_pic.jpg"
+
+    if os.path.exists(start_image_path):
+        await message.reply_photo(photo=start_image_path, caption="🤖 Hello! I am Tensai Rename Bot.\nSend me a file to rename!")
+    else:
+        await message.reply("🤖 Hello! I am Tensai Rename Bot.\nSend me a file to rename!\n⚠️ Warning: Start image not found.")
 
 @app.on_message(filters.photo)
 async def save_thumbnail(client, message):
+    """Stores thumbnail image and confirms receipt."""
+    print("DEBUG: Thumbnail received.")  
+
     try:
         file_path = await message.download()
         if not file_path:
-            await message.reply("❌ Failed to save thumbnail!")
+            await message.reply("❌ Error: Failed to save thumbnail!")
+            print("DEBUG: Thumbnail download failed!")  
             return
         
-        user_states[message.chat.id]["thumbnail"] = file_path
-        await message.reply("📸 Thumbnail saved! Now send me the video file.")
+        user_states[message.chat.id] = {"thumbnail": file_path}
+        await message.reply("📸 Thumbnail saved successfully! Now send me the video file.")
+        print(f"DEBUG: Thumbnail saved at {file_path}")  
 
     except Exception as e:
-        logging.error(f"Thumbnail error: {e}")
+        print(f"❌ Thumbnail processing error: {e}")  
 
 @app.on_message(filters.video | filters.document)
 async def receive_file(client, message):
+    """Handles file upload and prompts user to start renaming."""
     file_path = await message.download()
     user_states[message.chat.id] = {"file": file_path}
-    keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🚀 Start Rename", callback_data="start_rename")]])
+
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🚀 Start Rename", callback_data="start_rename")]
+    ])
+    
     await message.reply("📂 File received! Click below to start renaming:", reply_markup=keyboard)
 
 @app.on_callback_query(filters.regex("start_rename"))
 async def ask_for_filename(client, callback_query):
+    """Asks user for filename after clicking 'Start Rename'."""
     chat_id = callback_query.message.chat.id
     user_states[chat_id]["awaiting_rename"] = True
+
     await callback_query.message.reply("📝 Please send the new file name:")
 
 @app.on_message(filters.text & filters.private)
 async def rename_command(client, message):
+    """Captures the new filename and shows output type selection buttons."""
     chat_id = message.chat.id
     user_state = user_states.get(chat_id, {})
+
     if user_state.get("awaiting_rename"):
         new_name = sanitize_filename(message.text.strip()) + ".mp4"
         user_state["new_name"] = new_name
         user_state["awaiting_rename"] = False
-        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("📄 Document", callback_data="output_document"),
-                                          InlineKeyboardButton("🎥 Video", callback_data="output_video")]])
+
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("📄 Document", callback_data="output_document"),
+             InlineKeyboardButton("🎥 Video", callback_data="output_video")]
+        ])
+        
         await message.reply("🔰 Select Output Type:", reply_markup=keyboard)
 
 @app.on_callback_query(filters.regex("output_document|output_video"))
 async def process_rename(client, callback_query):
+    """Executes renaming based on selected output type."""
     chat_id = callback_query.message.chat.id
     user_state = user_states.get(chat_id, {})
+
     output_type = "document" if callback_query.data == "output_document" else "video"
     user_state["output_type"] = output_type
+
     file_path = user_state.get("file")
     new_name = user_state.get("new_name")
     thumbnail = user_state.get("thumbnail") if output_type == "video" else None
@@ -80,33 +102,45 @@ async def process_rename(client, callback_query):
     await callback_query.message.reply("⚙️ Processing... Please wait.")
 
     try:
+        # Show Progress Bar
+        for percent in range(0, 101, 10):
+            await asyncio.sleep(1)
+            await display_progress(percent, current=percent, total=100, speed="500KB", time_remaining="5s", message=callback_query.message)
+
+        # Rename the file
         new_file_path = await rename_file(file_path, new_name)
+
+        if not new_file_path:
+            await callback_query.message.reply("❌ Rename process failed! Please try again.")
+            return
+
         if output_type == "video" and thumbnail:
             embedded_video = await attach_thumbnail(new_file_path, thumbnail)
+            
+            if not embedded_video:
+                await callback_query.message.reply("⚠️ Warning: Thumbnail embedding failed. Sending renamed file instead.")
+                embedded_video = new_file_path
+
             await callback_query.message.reply_video(video=embedded_video, caption="✅ Renaming Complete! Here is your renamed file.")
+        
         else:
             await callback_query.message.reply_document(document=new_file_path, caption="✅ Renaming Complete! Here is your renamed file.")
-        
-        del user_states[chat_id]
+
+        del user_states[chat_id]  # Cleanup user state after completion
 
     except Exception as e:
-        logging.error(f"❌ Error processing file: {e}")
-        await callback_query.message.reply(f"❌ Error: {e}")
+        await callback_query.message.reply(f"❌ Error processing file: {e}")
 
 async def keep_alive():
     """Periodically pings Telegram to prevent disconnection."""
     while True:
-        await asyncio.sleep(30)
-        logging.info("🔄 Keeping bot alive...")
+        await asyncio.sleep(30)  # Sends ping every 30 sec
+        print("🔄 Keeping bot alive...")
 
-# Bot startup sequence with correct log message format
+# Run the keep_alive function in a separate thread to prevent blocking bot execution
+threading.Thread(target=lambda: asyncio.run(keep_alive()), daemon=True).start()
+
 if __name__ == "__main__":
-    logging.info("🚀 Tensai Rename Bot is starting...")
-    
-    try:
-        start_bot()
-        threading.Thread(target=lambda: asyncio.run(keep_alive()), daemon=True).start()
-        app.run()
-        logging.info("🤖 Tensai Bot Started Successfully!")
-    except Exception as e:
-        logging.error(f"❌ Bot startup failed: {e}")
+    print("🚀 Tensai Rename Bot is starting...")
+    start_bot()
+    app.run()
