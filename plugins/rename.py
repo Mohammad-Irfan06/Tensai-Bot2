@@ -2,10 +2,10 @@ import os
 import asyncio
 
 async def rename_file(file_path, new_name):
-    """Safely renames a file with error handling and validation."""
+    """Safely renames a file with error handling."""
     
     if not os.path.exists(file_path):
-        print(f"❌ Error: File '{file_path}' does not exist!")
+        print(f"❌ Error: File '{file_path}' not found!")
         return None
 
     try:
