@@ -1,5 +1,6 @@
 import asyncio 
 from pyrogram import Client, filters
+from handler.start import start_bot
 import config
 
 app = Client("TensaiBot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN)
@@ -24,6 +25,7 @@ async def main():
     start_bot()
     print("Bot is running and listening for events...")
     await idle()  # Keeps the bot running
+    app.run()
 
 if __name__ == "__main__":
     asyncio.run(main())
