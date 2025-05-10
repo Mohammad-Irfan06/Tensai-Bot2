@@ -4,12 +4,14 @@ import threading
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import config
+import ffmpeg
+from PIL import Image
 from handler.start import start_bot
 from plugins.rename import rename_file
-from plugins.thumb import attach_thumbnail
 from utils.sanitize import sanitize_filename
 from utils.progress import display_progress
 
+# Persistent Pyrogram session to prevent disconnections
 app = Client("TensaiBot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN, workdir="./session/")
 
 # Dictionary to store user states (tracking rename process)
@@ -106,7 +108,7 @@ async def process_rename(client, callback_query):
             return
 
         if output_type == "video" and thumbnail:
-            embedded_video = await attach_thumbnail(new_file_path, thumbnail)
+            embedded_video = embed_thumbnail_ffmpeg(new_file_path, thumbnail)
             
             if not embedded_video:
                 await callback_query.message.reply("⚠️ Warning: Thumbnail embedding failed. Sending renamed file instead.")
@@ -122,19 +124,30 @@ async def process_rename(client, callback_query):
     except Exception as e:
         await callback_query.message.reply(f"❌ Error processing file: {e}")
 
-async def keep_alive():
-    """Periodically pings Telegram to prevent disconnection."""
-    while True:
-        await asyncio.sleep(30)
-        print("🔄 Keeping bot alive...")
+def embed_thumbnail_ffmpeg(video_file, thumbnail_file):
+    """Embeds a thumbnail into a video using FFmpeg."""
+    if not os.path.exists(video_file) or not os.path.exists(thumbnail_file):
+        print(f"❌ Error: Video or thumbnail file missing!")
+        return None
 
-if __name__ == "__main__":
-    print("🚀 Tensai Rename Bot is starting...")
-    
     try:
-        start_bot()
-        threading.Thread(target=lambda: asyncio.run(keep_alive()), daemon=True).start()
-        while True:
+        img = Image.open(thumbnail_file)
+        img.thumbnail((400, 400))
+        temp_thumb = "temp_thumbnail.jpg"
+        img.save(temp_thumb, "JPEG", quality=85) 
+        
+        output_video = f"embedded_{os.path.basename(video_file)}"
+        
+        ffmpeg.input(video_file).input(temp_thumb, loop=1).output(output_video, vcodec="libx264", movflags="faststart", pix_fmt="yuv420p").run()
+
+        print(f"✅ Thumbnail embedded successfully: {output_video}")
+        return output_video  
+
+    except Exception as e:
+        print(f"❌ FFmpeg Error: {e}")
+        return None
+
+while True:
     try:
         print("🚀 Tensai Bot is connecting...")
         app.run()
@@ -144,10 +157,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"⚠️ Unexpected Error: {e}. Reconnecting in 5 seconds...")
         asyncio.sleep(5)
-
-        print(f"⚠️ Unexpected Error: {e}. Reconnecting in 5 seconds...")
-        asyncio.sleep(5)
-
-        print("✅ Tensai Bot Started Successfully!")
-    except Exception as e:
-        print(f"❌ Bot startup failed: {e}")
