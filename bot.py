@@ -121,10 +121,10 @@ async def process_rename(client, callback_query):
                 await callback_query.message.reply("⚠️ Warning: Thumbnail embedding failed. Sending renamed file instead.")
                 embedded_video = new_file_path
 
-            await callback_query.message.reply(f"✅ Renaming Complete! Here is your file: `{embedded_video}`")
+            await callback_query.message.reply_video(video=embedded_video, caption="✅ Renaming Complete! Here is your renamed file.")
         
         else:
-            await callback_query.message.reply(f"✅ Renaming Complete! Here is your file: `{new_file_path}`")
+            await callback_query.message.reply_document(document=new_file_path, caption="✅ Renaming Complete! Here is your renamed file.")
 
         del user_states[chat_id]  # Cleanup user state after completion
 
