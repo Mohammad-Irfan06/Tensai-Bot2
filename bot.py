@@ -1,10 +1,10 @@
-import asyncio
-from handler.start import start_bot
+from pyrogram import Client, filters
+import config
 
-async def main():
-    start_bot()
-    await asyncio.sleep(5)  # Simulate bot running
-    print("Bot is running and listening for events...")  # Ensure this prints
+app = Client("TensaiBot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN)
 
-if __name__ == "__main__":
-    asyncio.run(main())
+@app.on_message(filters.command("start"))
+async def start(client, message):
+    await message.reply("🚀 Hello! I am Tensai Rename Bot. Send me a file to rename.")
+
+app.run()
