@@ -67,10 +67,10 @@ async def process_rename(client, callback_query):
     """Executes renaming based on selected output type."""
     chat_id = callback_query.message.chat.id
     user_state = user_states.get(chat_id, {})
-    
+
     output_type = "document" if callback_query.data == "output_document" else "video"
     user_state["output_type"] = output_type
-    
+
     file_path = user_state.get("file")
     new_name = user_state.get("new_name")
     thumbnail = user_state.get("thumbnail") if output_type == "video" else None
@@ -78,22 +78,36 @@ async def process_rename(client, callback_query):
     if not file_path or not new_name:
         await callback_query.message.reply("❌ Error: Missing file or rename input!")
         return
-    
-    await callback_query.message.reply("⚙️ Processing... Please wait.")
-    
-    # Show Progress Bar
-    for percent in range(0, 101, 10):
-        await asyncio.sleep(1)
-        await display_progress(percent, current=percent, total=100, speed="500KB", time_remaining="5s", message=callback_query.message)
 
-    # Rename the file
+    await callback_query.message.reply("⚙️ Processing... Please wait.")
+
     try:
+        # Show Progress Bar
+        for percent in range(0, 101, 10):
+            await asyncio.sleep(1)
+            await display_progress(percent, current=percent, total=100, speed="500KB", time_remaining="5s", message=callback_query.message)
+
+        # Rename the file
         new_file_path = await rename_file(file_path, new_name)
+
+        if not new_file_path:
+            await callback_query.message.reply("❌ Rename process failed! Please try again.")
+            return
+
         if output_type == "video" and thumbnail:
-            await attach_thumbnail(new_file_path, thumbnail)
+            embedded_video = await attach_thumbnail(new_file_path, thumbnail)
+            
+            if not embedded_video:
+                await callback_query.message.reply("⚠️ Warning: Thumbnail embedding failed. Sending renamed file instead.")
+                embedded_video = new_file_path
+
+            await callback_query.message.reply(f"✅ Renaming Complete! Here is your file: `{embedded_video}`")
         
-        await callback_query.message.reply(f"✅ Renaming Complete! Here is your file: `{new_file_path}`")
+        else:
+            await callback_query.message.reply(f"✅ Renaming Complete! Here is your file: `{new_file_path}`")
+
         del user_states[chat_id]  # Cleanup user state after completion
+
     except Exception as e:
         await callback_query.message.reply(f"❌ Error processing file: {e}")
 
