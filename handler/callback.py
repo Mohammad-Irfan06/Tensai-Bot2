@@ -2,11 +2,14 @@ from helper.queue import process_queue
 from utils.progress import display_progress
 
 async def handle_callback(data):
-    file_id = data['file_id']
-    user_id = data['user_id']
+    file_id = data.get('file_id')  # Avoids KeyError
+    user_id = data.get('user_id')
 
-    # Show progress while renaming
-    for percent in range(0, 101, 10):
-        display_progress(percent, current=percent, total=100, speed='500KB', time_remaining='5s')
+    if not file_id or not user_id:
+        print("⚠️ Error: Missing file_id or user_id in request.")
+        return
 
-    await process_queue(file_id, user_id)
+    print(f"🔄 Processing rename for User: {user_id}, File: {file_id}")
+
+    # Start processing and show progress dynamically
+    await process_queue(file_id, user_id, display_progress)
