@@ -28,8 +28,13 @@ def attach_thumbnail(video_file, thumbnail_file):
             "-map", "0", "-map", "1", "-c", "copy",
             "-disposition:1", "attached_pic", output_path
         ]
-
+        print(f"✅ Running FFmpeg Command: {' '.join(cmd)}")
         subprocess.run(cmd, check=True)
+
+        # Cleanup the temporary thumbnail file
+        os.remove(temp_thumb)
+
+        print(f"✅ Thumbnail embedded successfully into {output_path}")
         return output_path
 
     except subprocess.CalledProcessError as e:
