@@ -3,7 +3,6 @@ import asyncio
 import subprocess
 from pyrogram.types import Message
 from thumb import attach_thumbnail
-print("Current Directory:", os.getcwd())
 
 async def rename_file(file_path, new_name):
     """Safely renames a file with error handling."""
