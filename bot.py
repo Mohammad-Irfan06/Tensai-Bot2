@@ -98,6 +98,6 @@ async def process_rename(client, callback_query):
         await callback_query.message.reply(f"❌ Error processing file: {e}")
 
 if __name__ == "__main__":
-    print("🚀 Tensai Rename Bot is starting...")
+    print("🤖 Tensai Rename Bot is starting...")
     start_bot()
     app.run()
