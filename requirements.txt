@@ -2,4 +2,6 @@ pyrogram==2.0.106
 tgcrypto
 motor
 aiofiles
+pymongo
+pillow
 ffmpeg-python
