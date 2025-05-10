@@ -6,7 +6,6 @@ def attach_thumbnail(video_file, thumbnail_file):
     """Embeds the thumbnail into a video safely with error handling."""
     
     if not os.path.exists(video_file) or not os.path.exists(thumbnail_file):
-        print(f"❌ Error: Video or thumbnail file not found!")
         return None
 
     try:
@@ -24,12 +23,7 @@ def attach_thumbnail(video_file, thumbnail_file):
             .run(capture_stdout=True, capture_stderr=True)
         )
 
-        print(f"✅ Thumbnail embedded successfully: {output_video}")
         return output_video  
 
-    except ffmpeg.Error as e:
-        print(f"❌ FFmpeg Error: {e.stderr.decode()}")
-        return None
-    except Exception as e:
-        print(f"❌ Unexpected Error: {e}")
+    except Exception:
         return None
