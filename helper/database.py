@@ -1,9 +1,8 @@
-import pymongo
-from config import MONGO_DB_URI, DB_NAME, COLLECTION_NAME
+from pymongo import MongoClient
+import config
 
-# Initialize the MongoDB database
-def db_init():
-    client = pymongo.MongoClient(MONGO_DB_URI)
-    db = client[DB_NAME]
-    collection = db[COLLECTION_NAME]
-    return collection
+client = MongoClient(config.MONGO_DB_URI)
+db = client[config.DB_NAME]
+
+def store_rename(user_id, old_name, new_name):
+    db[config.COLLECTION_NAME].insert_one({"user": user_id, "old_name": old_name, "new_name": new_name})
