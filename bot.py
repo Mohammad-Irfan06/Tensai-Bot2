@@ -125,6 +125,7 @@ async def process_rename(client, callback_query):
                 video=final_video,
                 caption="✅ Renaming Complete! Here is your renamed video.",
                 supports_streaming=True
+                thumb=thumbnail  
             )
 
         else:
