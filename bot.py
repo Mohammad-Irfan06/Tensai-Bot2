@@ -144,6 +144,10 @@ threading.Thread(target=lambda: asyncio.run(keep_alive()), daemon=True).start()
 if __name__ == "__main__":
     print("🚀 Tensai Rename Bot is starting...")
     start_bot()
-    asyncio.run(keep_alive(app))  # Start keep-alive function
+    
+    # Start keep_alive function with correct client argument
+    threading.Thread(target=lambda: asyncio.run(keep_alive(app)), daemon=True).start()
+    
     app.run()
+
 
