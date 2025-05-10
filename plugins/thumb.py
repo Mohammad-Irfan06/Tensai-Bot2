@@ -19,6 +19,7 @@ def attach_thumbnail(video_file, thumbnail_file):
         img.thumbnail((320, 320))  # Safe Telegram size
         temp_thumb = "temp_thumbnail.jpg"
         img.save(temp_thumb, "JPEG", quality=85)
+        print(f"✅ Thumbnail converted and saved as {temp_thumb}")
 
         output_path = f"embedded_{os.path.basename(video_file)}"
 
@@ -28,10 +29,15 @@ def attach_thumbnail(video_file, thumbnail_file):
             "-map", "0", "-map", "1", "-c", "copy",
             "-disposition:1", "attached_pic", output_path
         ]
-        subprocess.run(cmd, check=True)
+        print(f"Running FFmpeg Command: {' '.join(cmd)}")
+
+        result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print("FFmpeg Output:", result.stdout.decode())
+        print("FFmpeg Error:", result.stderr.decode())
 
         # Cleanup the temporary thumbnail file
         os.remove(temp_thumb)
+        print(f"✅ Temporary thumbnail removed: {temp_thumb}")
 
         print(f"✅ Thumbnail embedded successfully into {output_path}")
         return output_path
