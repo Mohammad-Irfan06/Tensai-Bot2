@@ -22,17 +22,25 @@ async def rename_file(file_path, new_name):
 async def embed_thumbnail(input_file, output_file, thumbnail_file):
     """Embeds thumbnail into a video using ffmpeg."""
     try:
+        # Log paths and files
+        print(f"DEBUG: Embedding thumbnail for {input_file} with {thumbnail_file}")
+        
+        # FFmpeg command to embed thumbnail
         cmd = [
             "ffmpeg", "-i", input_file, "-i", thumbnail_file,
             "-map", "0", "-map", "1", "-c", "copy",
             "-disposition:1", "attached_pic", output_file
         ]
+        print(f"DEBUG: Running command: {' '.join(cmd)}")  # Log the ffmpeg command
         subprocess.run(cmd, check=True)
         print("✅ Thumbnail embedded successfully")
         return output_file
     except subprocess.CalledProcessError as e:
         print(f"❌ FFmpeg Error: {e}")
-        return input_file  # fallback to original
+        return input_file  # fallback to original if error
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+        return input_file
 
 async def send_output_file(bot, message: Message, output_path, thumb_path=None, as_video=False, caption=""):
     """Sends the output file either as video or document."""
@@ -40,6 +48,13 @@ async def send_output_file(bot, message: Message, output_path, thumb_path=None, 
     # If video is sent, use the thumbnail
     if as_video and output_path.lower().endswith(('.mp4', '.mkv', '.webm')):
         try:
+            # Check if thumbnail exists
+            if thumb_path:
+                print(f"DEBUG: Thumbnail path: {thumb_path}")
+            else:
+                print("DEBUG: No thumbnail provided")
+
+            # Send video with thumbnail
             await message.reply_video(
                 video=output_path,
                 caption=caption,
@@ -53,4 +68,3 @@ async def send_output_file(bot, message: Message, output_path, thumb_path=None, 
     else:
         await message.reply_document(document=output_path, caption=caption)
         print("📁 Sent as document (fallback)")
-
