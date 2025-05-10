@@ -2,6 +2,7 @@ import os
 import asyncio
 import subprocess
 from pyrogram.types import Message
+from thumb import attach_thumbnail
 
 async def rename_file(file_path, new_name):
     """Safely renames a file with error handling."""
@@ -36,6 +37,7 @@ async def embed_thumbnail(input_file, output_file, thumbnail_file):
 async def send_output_file(bot, message: Message, output_path, thumb_path=None, as_video=False, caption=""):
     """Sends the output file either as video or document."""
 
+    # If video is sent, use the thumbnail
     if as_video and output_path.lower().endswith(('.mp4', '.mkv', '.webm')):
         try:
             await message.reply_video(
@@ -51,3 +53,4 @@ async def send_output_file(bot, message: Message, output_path, thumb_path=None, 
     else:
         await message.reply_document(document=output_path, caption=caption)
         print("📁 Sent as document (fallback)")
+
