@@ -1,14 +1,5 @@
 import asyncio
-from asyncio import Queue
+from plugins.rename import rename_file
 
-file_queue = Queue()
-
-async def process_file_queue():
-    while True:
-        file_data = await file_queue.get()
-        # Process file (e.g., renaming and thumbnail embedding)
-        await process_file(file_data)
-        file_queue.task_done()
-
-async def add_to_queue(file_data):
-    await file_queue.put(file_data)
+async def process_queue(file_id, user_id):
+    await rename_file(file_id, user_id)
