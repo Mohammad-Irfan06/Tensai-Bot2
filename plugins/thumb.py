@@ -29,12 +29,20 @@ def attach_thumbnail(video_file, thumbnail_file):
             "-disposition:1", "attached_pic", output_path
         ]
         print(f"✅ Running FFmpeg Command: {' '.join(cmd)}")
-        subprocess.run(cmd, check=True)
+
+        # Run the FFmpeg command and capture output for debugging
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+
+        # Check if the FFmpeg command ran successfully
+        if result.returncode == 0:
+            print(f"✅ Thumbnail embedded successfully into {output_path}")
+        else:
+            print(f"❌ FFmpeg failed with error code {result.returncode}")
+            print(f"FFmpeg Error: {result.stderr}")
 
         # Cleanup the temporary thumbnail file
         os.remove(temp_thumb)
 
-        print(f"✅ Thumbnail embedded successfully into {output_path}")
         return output_path
 
     except subprocess.CalledProcessError as e:
@@ -43,3 +51,7 @@ def attach_thumbnail(video_file, thumbnail_file):
     except Exception as e:
         print(f"❌ Unexpected error: {e}")
         return None
+    finally:
+        # Ensure temporary thumbnail cleanup even in case of error
+        if os.path.exists(temp_thumb):
+            os.remove(temp_thumb)
