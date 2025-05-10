@@ -1,10 +1,10 @@
 import os
-import subprocess
+import ffmpeg
 from PIL import Image
 
 def attach_thumbnail(video_file, thumbnail_file):
     """Embeds the thumbnail into a video file as metadata thumbnail."""
-    
+
     if not os.path.exists(video_file):
         print(f"❌ Video file not found: {video_file}")
         return None
@@ -23,17 +23,9 @@ def attach_thumbnail(video_file, thumbnail_file):
 
         output_path = f"embedded_{os.path.basename(video_file)}"
 
-        # FFmpeg command to embed thumbnail
-        cmd = [
-            "ffmpeg", "-i", video_file, "-i", temp_thumb,
-            "-map", "0", "-map", "1", "-c", "copy",
-            "-disposition:1", "attached_pic", output_path
-        ]
-        print(f"Running FFmpeg Command: {' '.join(cmd)}")
-
-        result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print("FFmpeg Output:", result.stdout.decode())
-        print("FFmpeg Error:", result.stderr.decode())
+        # Use ffmpeg-python to embed the thumbnail into the video
+        ffmpeg.input(video_file)
+        ffmpeg.input(temp_thumb, loop=1).output(output_path, map="0:v:0", map="1:a:0", c="copy", dis="1").run()
 
         # Cleanup the temporary thumbnail file
         os.remove(temp_thumb)
@@ -42,9 +34,6 @@ def attach_thumbnail(video_file, thumbnail_file):
         print(f"✅ Thumbnail embedded successfully into {output_path}")
         return output_path
 
-    except subprocess.CalledProcessError as e:
-        print(f"❌ FFmpeg failed: {e}")
-        return None
     except Exception as e:
         print(f"❌ Unexpected error: {e}")
         return None
