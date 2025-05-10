@@ -12,8 +12,9 @@ async def start(client, message):
 
 @app.on_message(filters.photo)  # Handles thumbnails
 async def save_thumbnail(client, message):
-    await message.photo.download("thumbnail.jpg")
+    file_path = await message.download()  # Correct method to download the file
     await message.reply("📸 Thumbnail saved successfully!")
+    print(f"Thumbnail saved at {file_path}")  # Debugging log
 
 @app.on_message(filters.video)  # Handles video files
 async def receive_video(client, message):
