@@ -24,7 +24,8 @@ def attach_thumbnail(video_file, thumbnail_file):
         output_path = f"embedded_{os.path.basename(video_file)}"
 
         # Use ffmpeg-python to embed the thumbnail into the video
-        ffmpeg.input(video_file).output(output_path, map=["0", "1"], c="copy", dis="1", i=temp_thumb).run()
+        print(f"DEBUG: Embedding thumbnail into {video_file}...")
+        ffmpeg.input(video_file).output(output_path, map=["0", "1"], c="copy", dis="1", i=temp_thumb).run(check=True)
 
         # Cleanup the temporary thumbnail file
         os.remove(temp_thumb)
@@ -33,6 +34,9 @@ def attach_thumbnail(video_file, thumbnail_file):
         print(f"✅ Thumbnail embedded successfully into {output_path}")
         return output_path
 
+    except ffmpeg.Error as e:
+        print(f"❌ FFmpeg error: {e.stderr.decode()}")
+        return None
     except Exception as e:
         print(f"❌ Unexpected error: {e}")
         return None
