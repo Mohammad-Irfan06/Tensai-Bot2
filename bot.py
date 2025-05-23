@@ -1,4 +1,5 @@
 import os
+import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import config
@@ -53,8 +54,8 @@ async def embed_thumbnail(client, callback_query):
         return
 
     try:
-        # Embed the thumbnail into the video
-        final_video = attach_thumbnail(video_path, thumbnail_path)
+        # Embed the thumbnail into the video asynchronously
+        final_video = await asyncio.to_thread(attach_thumbnail, video_path, thumbnail_path)
         if final_video:
             await client.send_video(
                 chat_id=chat_id,
@@ -63,7 +64,6 @@ async def embed_thumbnail(client, callback_query):
             )
         else:
             await callback_query.message.reply("❌ Error: Thumbnail embedding failed.")
-        
     except Exception as e:
         await callback_query.message.reply(f"❌ Error: {e}")
 
