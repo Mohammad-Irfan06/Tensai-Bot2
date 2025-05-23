@@ -27,7 +27,7 @@ async def save_thumbnail(client, message):
 
 @app.on_message(filters.video)
 async def receive_video(client, message):
-    """Store video and ask user to start renaming."""
+    """Store video and ask user to start embedding."""
     try:
         file_path = await message.download()
         user_states[message.chat.id]["file"] = file_path
